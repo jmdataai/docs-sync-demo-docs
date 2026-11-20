@@ -1,0 +1,32 @@
+site_name: Sales Insights docs (docs sync demo)
+docs_dir: docs
+theme:
+  name: material
+  features:
+    - content.code.copy
+markdown_extensions:
+  - tables
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+nav:
+  - Home: index.md
+  - Sales Insights:
+      - Product summary: Sales/00_Product_Summary/product_summary.md
+      - Bronze:
+          - orders_raw: Sales/02_Bronze/entities/orders_raw.md
+      - Silver:
+          - stg_orders: Sales/03_Silver/entities/stg_orders.md
+          - d_customer: Sales/03_Silver/entities/d_customer.md
+          - f_sales: Sales/03_Silver/entities/f_sales.md
+      - Gold:
+          - F_SALES_SUMMARY: Sales/04_Gold/entities/f_sales_summary.md
+      - Charts:
+          - Top Cities: Sales/06_Charts/top_cities.md
+          - Revenue by Segment: Sales/06_Charts/revenue_by_segment.md

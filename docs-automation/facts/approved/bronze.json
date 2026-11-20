@@ -1,0 +1,24 @@
+{
+  "customers": {
+    "bronze_table": "customers_raw",
+    "input_path": "SALES_SRC.CUSTOMERS",
+    "name": "Customers",
+    "source_table": "SALES_SRC_DEV.CUSTOMERS",
+    "sql": "SELECT\n    customer_id,\n    customer_nm,\n    customer_segment,\n    created_dt\nFROM {source_table}\n",
+    "sql_missing": false,
+    "sql_path": "sql/customers.sql",
+    "sql_sha": "a56b82828c7832b7",
+    "type": "jdbc"
+  },
+  "orders": {
+    "bronze_table": "orders_raw",
+    "input_path": "SALES_SRC.ORDERS",
+    "name": "Orders",
+    "source_table": "SALES_SRC_DEV.ORDERS",
+    "sql": "SELECT\n    order_id,\n    customer_id,\n    order_dt,\n    city_nm,\n    region_cd,\n    order_status,\n    gross_amt,\n    discount_amt\nFROM {source_table}\nWHERE order_dt >= DATEADD(month, -36, CURRENT_DATE)\n",
+    "sql_missing": false,
+    "sql_path": "sql/orders.sql",
+    "sql_sha": "101e1686f97ae30b",
+    "type": "jdbc"
+  }
+}

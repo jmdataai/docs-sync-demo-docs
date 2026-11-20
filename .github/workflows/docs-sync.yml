@@ -1,0 +1,125 @@
+# Docs sync (demo version of open-data-artefacts/.github/workflows/docs-sync.yml)
+#
+# Checks out the code repo read-only, runs docs_sync, and opens (or refreshes) ONE
+# pull request with the updated pages and the drift report. Nothing merges by itself.
+# Merging the pull request is the approval.
+#
+# Differences from the client file: GitHub-hosted runner instead of uhg-runner,
+# public PyPI instead of JFrog, one code repo instead of five, no dbt manifest download.
+#
+# Settings in this repo (Settings > Secrets and variables > Actions):
+#   Variables tab:  DOCS_SOURCE_ORG    = jmdataai
+#                   DOCS_SOURCE_REPO   = docs-sync-demo-code
+#                   DOCS_SOURCE_BRANCH = develop
+#   Secrets tab:    DOCS_SYNC_READ_TOKEN = read-only token for the code repo
+# And: Settings > Actions > General > Workflow permissions >
+#      "Allow GitHub Actions to create and approve pull requests" ticked.
+
+name: Docs sync
+
+on:
+  repository_dispatch:
+    types: [source-deployed]        # sent by notify-docs.yml in the code repo
+  schedule:
+    - cron: '30 5 * * 1'            # Mondays 05:30 UTC: catches anything a notice missed
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: Branch of the code repo to document
+        required: false
+        default: develop
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: docs-sync
+  cancel-in-progress: false
+
+env:
+  SOURCE_ORG: ${{ vars.DOCS_SOURCE_ORG || github.repository_owner }}
+  SOURCE_REPO: ${{ vars.DOCS_SOURCE_REPO || 'docs-sync-demo-code' }}
+  SOURCE_BRANCH: ${{ github.event.inputs.source_branch || vars.DOCS_SOURCE_BRANCH || 'develop' }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: What started this run
+        env:
+          EVENT: ${{ github.event_name }}
+          FROM_REPO: ${{ github.event.client_payload.repo }}
+          FROM_SHA: ${{ github.event.client_payload.sha }}
+        run: |
+          echo "Trigger: $EVENT"
+          if [ -n "$FROM_REPO" ]; then echo "Deploy notice from $FROM_REPO at commit $FROM_SHA"; fi
+          echo "Documenting branch: $SOURCE_BRANCH"
+
+      - name: Check out the docs repo
+        uses: actions/checkout@v6
+
+      - name: Check out the code repo (read-only token)
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ env.SOURCE_ORG }}/${{ env.SOURCE_REPO }}
+          ref: ${{ env.SOURCE_BRANCH }}
+          token: ${{ secrets.DOCS_SYNC_READ_TOKEN }}
+          path: sources/docs-sync-demo-code
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -r requirements.txt -r docs-automation/requirements.txt
+
+      - name: Run docs sync (extract, update, compare, check)
+        id: sync
+        run: |
+          set +e
+          PYTHONPATH=docs-automation python -m docs_sync all --approve
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Show the drift report on this run's page
+        if: always()
+        run: |
+          if [ -f docs-automation/out/drift_report.md ]; then
+            cat docs-automation/out/drift_report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build the site
+        run: mkdocs build
+
+      - name: Keep the drift report with the run
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: docs-sync-report
+          path: docs-automation/out/
+
+      - name: Open or refresh the pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git status --porcelain -- docs docs-automation/facts/approved)" ]; then
+            echo "Docs already match the code. No pull request needed."
+            echo "### Docs already match the code. No pull request needed." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          BRANCH="docs-sync/${SOURCE_BRANCH}"
+          git config user.name "docs-sync"
+          git config user.email "docs-sync@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add docs docs-automation/facts/approved
+          git commit -m "Docs sync: changes from ${SOURCE_BRANCH}"
+          git push --force origin "$BRANCH"
+          PYTHONPATH=docs-automation python -m docs_sync.open_pr --head "$BRANCH" --base main \
+            --title "Docs sync: changes from ${SOURCE_BRANCH}" \
+            --body-file docs-automation/out/drift_report.md
+
+      - name: Fail the run if docs_sync found errors
+        if: steps.sync.outputs.exit != '0'
+        run: |
+          echo "docs_sync reported errors. See the 'Errors' section of the drift report."
+          exit 1

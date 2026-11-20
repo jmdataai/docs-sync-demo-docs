@@ -1,0 +1,76 @@
+{
+  "d_customer": {
+    "columns": {},
+    "file": "models/silver/d_customer.sql",
+    "materialized": "table",
+    "name": "d_customer",
+    "refs": [],
+    "sources": [
+      "bronze.customers_raw"
+    ],
+    "sql": "select\n    customer_id,\n    customer_nm,\n    coalesce(customer_segment, 'UNKNOWN') as customer_segment,\n    created_dt\nfrom {{ source('bronze', 'customers_raw') }}\n",
+    "sql_sha": "6bc5c3906e0e7e1e",
+    "tags": [
+      "sales",
+      "silver"
+    ]
+  },
+  "f_sales": {
+    "columns": {
+      "city_nm": {
+        "description": "City of the order, upper case.",
+        "type": ""
+      },
+      "customer_segment": {
+        "description": "Segment of the customer who placed the order.",
+        "type": ""
+      },
+      "net_revenue_amt": {
+        "description": "Revenue for the day.",
+        "type": ""
+      },
+      "order_cnt": {
+        "description": "Number of orders.",
+        "type": ""
+      },
+      "region_cd": {
+        "description": "Sales region code.",
+        "type": ""
+      },
+      "sale_dt": {
+        "description": "Order date.",
+        "type": ""
+      }
+    },
+    "file": "models/silver/f_sales.sql",
+    "materialized": "table",
+    "name": "f_sales",
+    "refs": [
+      "d_customer",
+      "stg_orders"
+    ],
+    "sources": [],
+    "sql": "select\n    o.order_dt                    as sale_dt,\n    o.city_nm,\n    o.region_cd,\n    c.customer_segment,\n    count(distinct o.order_id)    as order_cnt,\n    sum(o.gross_amt)              as net_revenue_amt\nfrom {{ ref('stg_orders') }} o\njoin {{ ref('d_customer') }} c\n  on o.customer_id = c.customer_id\ngroup by 1, 2, 3, 4\n",
+    "sql_sha": "1eafe210e0cb2d77",
+    "tags": [
+      "sales",
+      "silver"
+    ]
+  },
+  "stg_orders": {
+    "columns": {},
+    "file": "models/silver/stg_orders.sql",
+    "materialized": "table",
+    "name": "stg_orders",
+    "refs": [],
+    "sources": [
+      "bronze.orders_raw"
+    ],
+    "sql": "select\n    order_id,\n    customer_id,\n    cast(order_dt as date)        as order_dt,\n    upper(trim(city_nm))          as city_nm,\n    region_cd,\n    order_status,\n    cast(gross_amt as decimal(18,2))    as gross_amt,\n    cast(discount_amt as decimal(18,2)) as discount_amt\nfrom {{ source('bronze', 'orders_raw') }}\n",
+    "sql_sha": "26b372800d8eaa92",
+    "tags": [
+      "sales",
+      "silver"
+    ]
+  }
+}

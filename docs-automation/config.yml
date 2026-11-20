@@ -1,0 +1,38 @@
+# docs-automation/config.yml  (demo version)
+# The only file in docs-automation/ that differs from the client package.
+# Paths are relative to the docs repo root. In CI the code repo is checked out
+# under sources/ by .github/workflows/docs-sync.yml.
+
+sources:
+  dbt:
+    project_dir: sources/docs-sync-demo-code/dbt_project
+    # Optional in the real setup: the manifest the dbt deploy pipeline uploads.
+    # Not used in the demo, so the project files are read directly.
+    manifest: sources/dbt-artifacts/manifest.json
+    catalog: sources/dbt-artifacts/catalog.json
+  snowflake:
+    migrations_dir: sources/docs-sync-demo-code/snowflake/migrations
+  extractor:
+    package_dir: sources/docs-sync-demo-code/extractor
+    env: dev                       # which block of sql_config.yml gives the source tables
+  tenant:
+    java_dir: sources/docs-sync-demo-code/tenant-api/src/main/java
+    repositories_glob: "**/repositories/*.java"
+    constants_glob: "**/constants/*.java"
+  experience:
+    src_dir: sources/docs-sync-demo-code/experience-api/src/api
+    folders: [sales]               # one folder per documented product
+
+docs:
+  root: docs
+  products: [Sales]                # folders under docs/ that docs_sync reads and updates
+
+facts:
+  current: docs-automation/facts/current     # written every run (git-ignored)
+  approved: docs-automation/facts/approved   # committed; merging the PR approves it
+
+output:
+  dir: docs-automation/out                   # drift report and check results (git-ignored)
+
+checks:
+  fail_on_counts: false

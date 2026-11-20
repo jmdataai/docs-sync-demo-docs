@@ -1,0 +1,69 @@
+{
+  "procedures": {
+    "R__SP_LOAD_F_SALES_SUMMARY.sql": {
+      "sha": "d6a72bd21108e9d9",
+      "stage_paths": [
+        "@GOLD_STAGE/f_sales/"
+      ],
+      "targets": [
+        "f_sales_summary"
+      ]
+    }
+  },
+  "tables": {
+    "d_region": {
+      "cluster_by": [],
+      "columns": {
+        "active_flg": {
+          "masking": null,
+          "type": "varchar(1)"
+        },
+        "region_cd": {
+          "masking": null,
+          "type": "varchar(10)"
+        },
+        "region_nm": {
+          "masking": null,
+          "type": "varchar(50)"
+        }
+      },
+      "defined_in": [
+        "V1.0__initial_objects.sql"
+      ]
+    },
+    "f_sales_summary": {
+      "cluster_by": [
+        "sale_dt"
+      ],
+      "columns": {
+        "city_nm": {
+          "masking": null,
+          "type": "varchar(50)"
+        },
+        "customer_segment": {
+          "masking": null,
+          "type": "varchar(30)"
+        },
+        "net_revenue_amt": {
+          "masking": null,
+          "type": "number(18,2)"
+        },
+        "order_cnt": {
+          "masking": null,
+          "type": "number(18,0)"
+        },
+        "region_cd": {
+          "masking": null,
+          "type": "varchar(10)"
+        },
+        "sale_dt": {
+          "masking": null,
+          "type": "date"
+        }
+      },
+      "defined_in": [
+        "V1.0__initial_objects.sql"
+      ]
+    }
+  }
+}

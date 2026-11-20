@@ -1,0 +1,55 @@
+{
+  "constants": {
+    "FILTER_ACTIVE_REGION": " AND s.region_cd IN (SELECT r.region_cd FROM D_REGION r WHERE r.active_flg = 'Y') "
+  },
+  "experience": {
+    "sales/salesInsights.service.ts": "8d82a9aa0b839233"
+  },
+  "queries": {
+    "SalesChartRepository.getRevenueBySegment": {
+      "columns": [
+        "active_flg",
+        "customer_segment",
+        "net_revenue_amt",
+        "order_cnt",
+        "region_cd",
+        "sale_dt"
+      ],
+      "constants": [
+        "FILTER_ACTIVE_REGION"
+      ],
+      "file": "com/demo/sales/repositories/SalesChartRepository.java",
+      "method": "getRevenueBySegment",
+      "own_sha": "7b01648bbf9ae9de",
+      "repository": "SalesChartRepository",
+      "sql": "SELECT s.customer_segment, SUM(s.net_revenue_amt) AS revenue, SUM(s.order_cnt) AS orders FROM F_SALES_SUMMARY s WHERE s.sale_dt BETWEEN :startDate AND :endDate AND s.region_cd IN (SELECT r.region_cd FROM D_REGION r WHERE r.active_flg = 'Y') GROUP BY s.customer_segment ORDER BY revenue DESC",
+      "sql_sha": "4eddb73e5a14a701",
+      "tables": [
+        "D_REGION",
+        "F_SALES_SUMMARY"
+      ]
+    },
+    "SalesChartRepository.getTopCities": {
+      "columns": [
+        "active_flg",
+        "city_nm",
+        "net_revenue_amt",
+        "region_cd",
+        "sale_dt"
+      ],
+      "constants": [
+        "FILTER_ACTIVE_REGION"
+      ],
+      "file": "com/demo/sales/repositories/SalesChartRepository.java",
+      "method": "getTopCities",
+      "own_sha": "05a330f6f72018fa",
+      "repository": "SalesChartRepository",
+      "sql": "SELECT s.city_nm, SUM(s.net_revenue_amt) AS revenue FROM F_SALES_SUMMARY s WHERE s.sale_dt BETWEEN :startDate AND :endDate AND s.region_cd IN (SELECT r.region_cd FROM D_REGION r WHERE r.active_flg = 'Y') GROUP BY s.city_nm ORDER BY revenue DESC LIMIT 10",
+      "sql_sha": "a36923e23dc26cf4",
+      "tables": [
+        "D_REGION",
+        "F_SALES_SUMMARY"
+      ]
+    }
+  }
+}
