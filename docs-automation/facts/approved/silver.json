@@ -25,8 +25,12 @@
         "description": "Segment of the customer who placed the order.",
         "type": ""
       },
+      "discount_amt": {
+        "description": "Discount given on the day's orders.",
+        "type": ""
+      },
       "net_revenue_amt": {
-        "description": "Revenue for the day.",
+        "description": "Revenue for the day, after discounts. Cancelled orders are left out.",
         "type": ""
       },
       "order_cnt": {
@@ -50,8 +54,8 @@
       "stg_orders"
     ],
     "sources": [],
-    "sql": "select\n    o.order_dt                    as sale_dt,\n    o.city_nm,\n    o.region_cd,\n    c.customer_segment,\n    count(distinct o.order_id)    as order_cnt,\n    sum(o.gross_amt)              as net_revenue_amt\nfrom {{ ref('stg_orders') }} o\njoin {{ ref('d_customer') }} c\n  on o.customer_id = c.customer_id\ngroup by 1, 2, 3, 4\n",
-    "sql_sha": "1eafe210e0cb2d77",
+    "sql": "select\n    o.order_dt                    as sale_dt,\n    o.city_nm,\n    o.region_cd,\n    c.customer_segment,\n    count(distinct o.order_id)    as order_cnt,\n    sum(o.gross_amt - o.discount_amt) as net_revenue_amt,\n    sum(o.discount_amt)           as discount_amt\nfrom {{ ref('stg_orders') }} o\njoin {{ ref('d_customer') }} c\n  on o.customer_id = c.customer_id\nwhere o.order_status <> 'CANCELLED'\ngroup by 1, 2, 3, 4\n",
+    "sql_sha": "f1e19b728260873c",
     "tags": [
       "sales",
       "silver"

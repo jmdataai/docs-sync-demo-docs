@@ -19,6 +19,7 @@ AND :endDate
 AND s.region_cd IN (SELECT r.region_cd
 FROM D_REGION r
 WHERE r.active_flg = 'Y')
+AND s.region_cd <> 'TEST'
 GROUP BY s.city_nm
 ORDER BY revenue DESC
 LIMIT 10

@@ -1,7 +1,7 @@
 {
   "procedures": {
     "R__SP_LOAD_F_SALES_SUMMARY.sql": {
-      "sha": "d6a72bd21108e9d9",
+      "sha": "b6031305648e4f72",
       "stage_paths": [
         "@GOLD_STAGE/f_sales/"
       ],
@@ -38,11 +38,15 @@
       "columns": {
         "city_nm": {
           "masking": null,
-          "type": "varchar(50)"
+          "type": "varchar(100)"
         },
         "customer_segment": {
           "masking": null,
           "type": "varchar(30)"
+        },
+        "discount_amt": {
+          "masking": null,
+          "type": "number(18,2)"
         },
         "net_revenue_amt": {
           "masking": null,
@@ -62,7 +66,8 @@
         }
       },
       "defined_in": [
-        "V1.0__initial_objects.sql"
+        "V1.0__initial_objects.sql",
+        "V1.1__add_discount_amt.sql"
       ]
     }
   }
