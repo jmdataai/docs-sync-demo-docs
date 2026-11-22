@@ -18,6 +18,7 @@ AND :endDate
 AND s.region_cd IN (SELECT r.region_cd
 FROM D_REGION r
 WHERE r.active_flg = 'Y')
+AND s.region_cd <> 'TEST'
 GROUP BY s.customer_segment
 ORDER BY revenue DESC
 ```
