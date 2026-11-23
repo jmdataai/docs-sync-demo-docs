@@ -17,11 +17,12 @@ Column and Type come from the Snowflake migrations. The last column is written b
 | Column | Type | What it is used for |
 | --- | --- | --- |
 | `sale_dt` | `date` | The date filter on both charts |
-| `city_nm` | `varchar(50)` | The city on the Top Cities chart |
+| `city_nm` | `varchar(100)` | The city on the Top Cities chart |
 | `net_revenue_amt` | `number(18,2)` | The revenue shown on both charts |
 | `customer_segment` | `varchar(30)` | The bars on the Revenue by Segment chart |
 | `order_cnt` | `number(18,0)` | The order count on the Revenue by Segment tooltip |
 | `region_cd` | `varchar(10)` | Used only by the active-region filter |
+| `discount_amt` | `number(18,2)` | To describe |
 <!-- auto:end -->
 
 ## Example query (Snowflake)
